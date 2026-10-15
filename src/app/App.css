@@ -1,0 +1,33 @@
+.credit-works-app {
+  display: flex;
+}
+
+.credit-works-side-panel {
+  flex-direction: column;
+  flex: none;
+  width: 244px;
+  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  position: sticky;
+  top: 0;
+  background-color: #111C2B;
+}
+
+.credit-works-main-section {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 48px 32px;
+  background: #f6f6f6;
+}
+
+@media (max-width: 700px) {
+  .credit-works-side-panel {
+    width: 180px;
+  }
+
+  .credit-works-main-section {
+    padding: 24px 16px;
+  }
+}
