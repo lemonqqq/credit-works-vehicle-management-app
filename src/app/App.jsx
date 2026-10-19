@@ -1,48 +1,45 @@
-import { useEffect, useMemo, useState } from 'react';
-import './App.css';
-import Navigation from '../navigation/navigation';
-import { default as CategoryMain } from '../categories/index';
-import { default as VehicleMain } from '../vehicles/index';
-import { categoryFn } from '../categories/utils/categoryUtil';
+import { useCallback, useEffect, useState } from "react";
+import "./App.css";
+import Navigation from "../navigation/navigation";
+import { default as CategoryMain } from "../categories/CategoryPage";
+import { default as VehicleMain } from "../vehicles/VehiclePage";
+import { useCategory } from "../categories/utils/useCategory";
 
 function App() {
   const [section, setSection] = useState("vehicles");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refreshCategories = () => {
+    setLoading(true);
+    setError("");
+    setRefreshKey((key) => key + 1);
+  };
 
   const go = (next) => {
-      setSection(next);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+    setSection(next);
+    refreshCategories();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const loadCategories = useCallback(async (signal) => {
+    setLoading(true);
+    setError("");
+    try {
+      await useCategory.load(signal);
+    } catch (err) {
+      if (!signal.aborted) setError(err.message);
+    } finally {
+      if (!signal.aborted) setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    categoryFn.set([
-        {
-            id: "10000000-0000-3000-7000-000000000001",
-            name: "Light",
-            description: "Vans and light-duty vehicles for local distribution.", 
-            minWeight: 0,
-            maxWeight: 500.00,
-            iconKey: "light"
-        },
-        {
-            id: "10000000-0000-3000-7000-000000000002",
-            name: "Medium",
-            description: "Rigid delivery vehicles for regional distribution.", 
-            minWeight: 500.01,
-            maxWeight: 2500.00,
-            iconKey: "medium"
-        },
-        {
-            id: "10000000-0000-3000-7000-000000000003",
-            name: "Heavy",
-            description: "Heavy trucks and tractor units for long-haul freight.", 
-            minWeight: 2500.01,
-            maxWeight: null,
-            iconKey: "heavy"
-        }
-    ]);
-    setLoading(false);
-  }, []);
+    const abortController = new AbortController();
+    loadCategories(abortController.signal);
+    return () => abortController.abort();
+  }, [section, refreshKey, loadCategories]);
 
   return (
     <div className="credit-works-app">
@@ -50,11 +47,24 @@ function App() {
         <Navigation section={section} setSection={go} />
       </aside>
       <main className="credit-works-main-section">
-        {section === 'vehicles' && !loading && <VehicleMain />}
-        {section === 'categories' && <CategoryMain />}
+        {loading && (
+          <p className="credit-works-main-status-msg" role="status">
+            Loading categories...
+          </p>
+        )}
+        {!loading && error && (
+          <div role="alert">
+            Could not load categories: {error}{" "}
+            <button type="button" onClick={refreshCategories}>
+              Retry
+            </button>
+          </div>
+        )}
+        {!loading && !error && section === "vehicles" && <VehicleMain />}
+        {!loading && !error && section === "categories" && <CategoryMain />}
       </main>
     </div>
   );
 }
 
-export default App
+export default App;

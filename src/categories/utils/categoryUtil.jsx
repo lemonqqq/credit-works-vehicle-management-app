@@ -23,10 +23,11 @@ let categories = [];
 let draftCategories = null;
 let draftHasError = false;
 
-const getCategorySection = (id = null, weight = null) => {
+const getCategorySection = (id = null, weight = -1) => {
     var category = categories.find(x => x.id === id 
-        || (x.minWeight <= weight && x.maxWeight >= weight));
+        || (id === null && x.minWeight <= weight && x.maxWeight >= weight));
     var icon = iconsKV.find(x => x.id === (category?.iconKey?.toLowerCase() ?? 'bike')) ?? iconsKV[0];
+    console.log(id, category, icon);
     return (
         <div>
             <span>{icon.icon}</span>
