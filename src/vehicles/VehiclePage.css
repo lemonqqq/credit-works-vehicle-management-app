@@ -1,0 +1,92 @@
+.vehicle-page {
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  color: #262626;
+  text-align: left;
+}
+
+.vehicle-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.vehicle-page-header h1 {
+  margin: 0 0 8px;
+  color: #161616;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.vehicle-page-header p {
+  color: #6f6f6f;
+  font-size: 14px;
+}
+
+.vehicle-page-error-msg {
+  border-radius: 7px;
+  background: #fff1e8;
+  padding: 10px 20px;
+  color: #a63d0c;
+  margin: 20px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.vehicle-page-status-msg {
+  border-radius: 7px;
+  background: #dfe4ea;
+  padding: 10px 20px;
+  color: #697586;
+  margin: 20px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.vehicle-page-add {
+  flex: none;
+  padding: 11px 16px;
+  border: 1px solid #f56822;
+  border-radius: 7px;
+  background: #f56822;
+  color: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  > svg {
+    padding-right: 10px;
+  }
+}
+
+.vehicle-page-add:hover {
+  background: #f56822;
+}
+
+.vehicle-page-add:focus-visible {
+  outline: 3px solid #f56822;
+  outline-offset: 3px;
+}
+
+.vehicle-list-footer {
+  padding-top: 10px;
+  float: right;
+  > button {
+    border: none;
+    background-color: none;
+    font-size: 14px;
+  }
+  > span {
+    background-color: #fff1e8;
+    border: 1px solid #a63d0c;
+    color: #a63d0c;
+    border-radius: 10px;
+    width: 20px;
+    height: 20px;
+    padding: 5px 14px;
+  }
+}

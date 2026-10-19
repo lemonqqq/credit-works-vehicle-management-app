@@ -1,70 +1,67 @@
 .side-bar-section {
-    padding: 20px;
+  padding: 20px;
 }
 
 .company-logo {
-    background-color: #f56822;
-    height: 30px;
-    width: 30px;
-    border-radius: 8px;
-    color: white;
-    > svg {
-        text-align: center;
-        vertical-align: middle;
-    }
+  background-color: #f56822;
+  height: 30px;
+  width: 30px;
+  border-radius: 8px;
+  color: white;
+  > svg {
+    text-align: center;
+    vertical-align: middle;
+  }
 }
 
 .side-bar-header {
-    display: flex;
-    padding-bottom: 50px;
-    > div {
-        padding-top: 2px;
-        width: 80%;
-        color: white;
-        text-align: center;
-    }
+  display: flex;
+  padding-bottom: 50px;
+  > div {
+    padding-top: 2px;
+    width: 80%;
+    color: white;
+    text-align: center;
+  }
 }
 
 .side-bar-nav {
-    > div {
-        padding: 5px 0;
-        font-size: 12px;
-        text-align: left;
-        color: #98A5B6;
+  > div {
+    padding: 5px 0;
+    font-size: 12px;
+    text-align: left;
+    color: #98a5b6;
+  }
+  > button {
+    width: 100%;
+    color: #b4b9ad;
+    text-align: left;
+    background: none;
+    border: 0;
+    border-radius: 9px;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    > span {
+      width: 18px;
+      padding: 2px;
+      font-size: 20px;
+      text-align: center;
     }
-    > button {
-        width: 100%;
-        color: #b4b9ad;
-        text-align: left;
-        background: none;
-        border: 0;
-        border-radius: 9px;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 14px;
-        font-size: 13px;
-        font-weight: 700;
-        display: flex;
-        > span {
-            width: 18px;
-            padding: 2px;
-            font-size: 20px;
-            text-align: center;
-        }
 
-        &:hover {
-            color: #ffffff;
-            background: #233044;
-            > span {
-                color: #f56822;
-            }
-        }
+    &:hover {
+      color: #ffffff;
+      background: #233044;
     }
-    .active {        
-        color: #ffffff;
-        background: #233044;        
-        > span {
-            color: #f56822;
-        }
+  }
+  .active {
+    color: #ffffff;
+    background: #233044;
+    > span {
+      color: #f56822;
     }
+  }
 }
