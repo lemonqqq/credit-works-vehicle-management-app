@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { categoryValidator } from "./categoryValidator";
-import { useCategory } from "./useCategory";
+import { categoryService } from "../categoryService";
 
 const initial = () => [
   {
@@ -27,7 +27,7 @@ const initial = () => [
 ];
 
 describe("category data validation", () => {
-  beforeEach(() => useCategory.setDraft(initial()));
+  beforeEach(() => categoryService.setDraft(initial()));
 
   it("accepts a complete set of adjacent ranges", () => {
     categoryValidator.validateWithList(initial()[1]);
@@ -42,7 +42,7 @@ describe("category data validation", () => {
     categoryValidator.validateWithList(changed);
     expect(categoryValidator.isValid()).toBe(false);
     expect(
-      useCategory
+      categoryService
         .getDraft()
         .some((item) => message.test(item.validationMessage ?? "")),
     ).toBe(true);
@@ -81,6 +81,10 @@ describe("category data validation", () => {
   it("rejects category names that differ only by case and surrounding space", () => {
     categoryValidator.validateWithList({ ...initial()[1], name: " light " });
     expect(categoryValidator.isValid()).toBe(false);
-    expect(useCategory.getDraft().some((x) => /duplicate/i.test(x.validationMessage))).toBe(true);
+    expect(
+      categoryService
+        .getDraft()
+        .some((x) => /duplicate/i.test(x.validationMessage)),
+    ).toBe(true);
   });
 });

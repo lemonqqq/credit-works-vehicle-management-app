@@ -1,3 +1,5 @@
+import { pollingService } from "./pollingService";
+
 async function request(path, { method = "GET", body, signal, cache } = {}) {
   if ((method === "GET" || method === "HEAD") && body !== undefined) {
     throw new Error(
@@ -24,7 +26,11 @@ async function request(path, { method = "GET", body, signal, cache } = {}) {
         `Request failed (${response.status})`,
     );
   }
-
+  if (method !== "GET" && response.status === 202) {
+    const queueId = await response.json();
+    await pollingService.add(method, path, queueId);
+    return queueId;
+  }
   return response.status === 204 ? null : response.json();
 }
 
@@ -58,4 +64,9 @@ export const categoriesApi = {
       method: "PATCH",
       body: Array.isArray(categories) ? { categories } : categories,
     }),
+};
+
+export const requestApi = {
+  poll: (queueId, signal) =>
+    request(`/api/request/${queueId}`, { signal, cache: "no-store" }),
 };

@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
-import Navigation from "../navigation/navigation";
+import Navigation from "../navigation/Navigation";
 import { default as CategoryMain } from "../categories/CategoryPage";
 import { default as VehicleMain } from "../vehicles/VehiclePage";
-import { useCategory } from "../categories/utils/useCategory";
+import { categoryService } from "../categories/categoryService";
+import Polling from "../polling/Polling";
 
 function App() {
   const [section, setSection] = useState("vehicles");
@@ -19,32 +20,27 @@ function App() {
 
   const go = (next) => {
     setSection(next);
-    refreshCategories();
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const loadCategories = useCallback(async (signal) => {
-    setLoading(true);
-    setError("");
-    try {
-      await useCategory.load(signal);
-    } catch (err) {
-      if (!signal.aborted) setError(err.message);
-    } finally {
-      if (!signal.aborted) setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
     const abortController = new AbortController();
-    loadCategories(abortController.signal);
+    categoryService
+      .load(abortController.signal)
+      .catch((err) => {
+        if (!abortController.signal.aborted) setError(err.message);
+      })
+      .finally(() => {
+        if (!abortController.signal.aborted) setLoading(false);
+      });
     return () => abortController.abort();
-  }, [section, refreshKey, loadCategories]);
+  }, [refreshKey]);
 
   return (
     <div className="credit-works-app">
       <aside className="credit-works-side-panel">
         <Navigation section={section} setSection={go} />
+        <Polling></Polling>
       </aside>
       <main className="credit-works-main-section">
         {loading && (

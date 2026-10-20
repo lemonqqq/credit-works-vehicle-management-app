@@ -1,7 +1,7 @@
 import { ImStack } from "react-icons/im";
 import { BsTruck } from "react-icons/bs";
 import { FaArrowsToDot } from "react-icons/fa6";
-import "./navigation.css";
+import "./Navigation.css";
 
 const nav = [
   { id: "vehicles", label: "Vehicles", icon: <BsTruck /> },

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { categoriesApi, vehiclesApi } from "./api";
+import { pollingService } from "./pollingService";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -69,31 +70,96 @@ describe("API client", () => {
   });
 
   it("get_WhenIdProvided_ThenRequestsThatVehicle", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200,
-      json: async () => ({ id: "vehicle-id" }) });
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ id: "vehicle-id" }),
+    });
     vi.stubGlobal("fetch", fetchMock);
-    await expect(vehiclesApi.get("vehicle-id")).resolves.toEqual({ id: "vehicle-id" });
-    expect(fetchMock).toHaveBeenCalledWith("/api/vehicles/vehicle-id",
-      expect.objectContaining({ method: "GET", body: undefined }));
+    await expect(vehiclesApi.get("vehicle-id")).resolves.toEqual({
+      id: "vehicle-id",
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/vehicles/vehicle-id",
+      expect.objectContaining({ method: "GET", body: undefined }),
+    );
   });
 
   it("update_WhenVehicleProvided_ThenSendsPutWithJson", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 202,
-      json: async () => "queue-id" });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 202,
+        json: async () => "queue-id",
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ state: "succeeded" }),
+      });
     vi.stubGlobal("fetch", fetchMock);
     const vehicle = { ownerName: "Alex Smith", weightKg: 420.5 };
     await vehiclesApi.update("vehicle-id", vehicle);
-    expect(fetchMock).toHaveBeenCalledWith("/api/vehicles/vehicle-id",
-      expect.objectContaining({ method: "PUT", body: JSON.stringify(vehicle) }));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/vehicles/vehicle-id",
+      expect.objectContaining({ method: "PUT", body: JSON.stringify(vehicle) }),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/request/queue-id",
+      expect.objectContaining({
+        method: "GET",
+        cache: "no-store",
+        signal: undefined,
+      }),
+    );
+  });
+
+  it("publishes queue progress while a write is polled", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 202,
+        json: async () => "progress-id",
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ state: "succeeded" }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const snapshots = [];
+    const unsubscribe = pollingService.subscribe((items) =>
+      snapshots.push(items),
+    );
+    try {
+      await vehiclesApi.update("vehicle-id", { ownerName: "Alex Smith" });
+      const progress = snapshots.map((items) =>
+        items.find((item) => item.id === "progress-id"),
+      );
+      expect(progress).toContainEqual(
+        expect.objectContaining({ status: "started", noOfAttempts: 1 }),
+      );
+      expect(progress).toContainEqual(
+        expect.objectContaining({ status: "completed", noOfAttempts: 1 }),
+      );
+    } finally {
+      unsubscribe();
+    }
   });
 
   it("list_WhenLoaded_ThenUsesCurrentCategoryRouteWithoutCache", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 200,
-      json: async () => [] });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ ok: true, status: 200, json: async () => [] });
     vi.stubGlobal("fetch", fetchMock);
     await categoriesApi.list();
-    expect(fetchMock).toHaveBeenCalledWith("/api/categories/list",
-      expect.objectContaining({ method: "GET", cache: "no-store" }));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/categories/list",
+      expect.objectContaining({ method: "GET", cache: "no-store" }),
+    );
   });
 
   it("confirm_WhenCategoryInvalid_ThenReturnsValidationError", async () => {
@@ -128,11 +194,14 @@ describe("API client", () => {
   });
 
   it("confirm_WhenConfigurationProvided_ThenSendsPatchRequest", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 202,
-      json: async () => ({ queueId: "one" }),
-    });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, status: 202, json: async () => "one" })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ state: "succeeded" }),
+      });
     vi.stubGlobal("fetch", fetchMock);
     const categories = [
       { name: "Light", minWeightKg: 0, maxWeightKg: null, iconKey: "car" },
@@ -144,6 +213,26 @@ describe("API client", () => {
         method: "PATCH",
         body: JSON.stringify({ categories }),
       }),
+    );
+  });
+
+  it("create_WhenQueuedWorkFails_ThenReportsFailure", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 202,
+        json: async () => "queue-id",
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ state: "failed" }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(vehiclesApi.create({ ownerName: "Alex" })).rejects.toThrow(
+      "The queued request failed",
     );
   });
 

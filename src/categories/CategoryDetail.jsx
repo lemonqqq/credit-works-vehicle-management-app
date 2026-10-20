@@ -2,38 +2,20 @@ import { useState } from "react";
 import TextField from "../shared/textField";
 import "./CategoryDetail.css";
 import { categoryIcon } from "./utils/categoryIcon";
-import { categoryValidator } from "./utils/categoryValidator";
 
-function Detail({ data, returnToList, setError }) {
+function Detail({
+  category,
+  onUpdate,
+  onCancel,
+  onFieldChangeHandler,
+  onIconClickHandler,
+}) {
   const [editMode] = useState(true);
-  const [category, setCategory] = useState(data);
 
-  const onFieldChangeHandler = (e, field) => {
-    const value = e.target.value;
-    const convertedValue =
-      !isNaN(parseFloat(value)) && isFinite(value)
-        ? parseFloat(e.target.value)
-        : e.target.value;
-    setCategory({ ...category, [field]: convertedValue });
-  };
-
-  const onIconClickHandler = (iconKey) => {
-    setCategory({ ...category, iconKey: iconKey });
-  };
-
-  const onCancel = () => {
-    returnToList();
-  };
-
-  const onSave = (item) => {
-    const errors = categoryValidator.validate(item);
-    if (errors !== null) {
-      setError(errors);
-      return;
-    } else {
-      categoryValidator.validateWithList(item);
-      returnToList();
-    }
+  const formatFieldWithDecimal = (value) => {
+    return !isNaN(parseFloat(value)) && isFinite(value)
+      ? parseFloat(value).toFixed(2)
+      : value;
   };
 
   return (
@@ -70,7 +52,7 @@ function Detail({ data, returnToList, setError }) {
         <div className="category-details-min-weight">
           <TextField
             label="Minimum weight (in KG)"
-            textValue={category?.minWeightKg?.toFixed(2)}
+            textValue={formatFieldWithDecimal(category?.minWeightKg)}
             editMode={editMode}
             onChangeHandler={(e) => onFieldChangeHandler(e, "minWeightKg")}
             required={true}
@@ -79,7 +61,7 @@ function Detail({ data, returnToList, setError }) {
         <div className="category-details-max-weight">
           <TextField
             label="Maximum weight (in KG)"
-            textValue={category?.maxWeightKg?.toFixed(2)}
+            textValue={formatFieldWithDecimal(category?.maxWeightKg)}
             editMode={editMode}
             onChangeHandler={(e) => onFieldChangeHandler(e, "maxWeightKg")}
           />
@@ -105,8 +87,8 @@ function Detail({ data, returnToList, setError }) {
           <button type="button" onClick={onCancel}>
             Cancel
           </button>
-          <button type="button" onClick={() => onSave(category)}>
-            Save
+          <button type="button" onClick={() => onUpdate(category)}>
+            Update
           </button>
         </div>
       )}

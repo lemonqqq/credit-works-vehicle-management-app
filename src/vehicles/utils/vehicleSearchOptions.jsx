@@ -1,29 +1,32 @@
-import { useCategory } from "../../categories/utils/useCategory";
+import { categoryService } from "../../categories/categoryService";
 
-export const YearOptions = (onSelectHandler) => {
+export const YearOptions = (onSelectHandler, value = "") => {
   const minYear = 2000;
   return (
-    <select defaultValue="null" onClick={(e) => onSelectHandler(e, "year")}>
-      <option value="null">All years</option>
-      {Array(26)
-        .keys()
-        .map((year, key) => (
-          <option key={key} value={minYear + year}>
+    <select
+      value={value}
+      onChange={(e) => onSelectHandler("year", e.target.value)}
+    >
+      <option value="">All years</option>
+      {Array.from(
+        { length: new Date().getFullYear() - minYear + 1 },
+        (_, year) => (
+          <option key={minYear + year} value={minYear + year}>
             {minYear + year}
           </option>
-        ))}
-      ;
+        ),
+      )}
     </select>
   );
 };
 
-export const ManufacturerOptions = (onSelectHandler) => {
+export const ManufacturerOptions = (onSelectHandler, value = "") => {
   return (
     <select
-      defaultValue="null"
-      onClick={(e) => onSelectHandler(e, "manufacturer")}
+      value={value}
+      onChange={(e) => onSelectHandler("manufacturer", e.target.value)}
     >
-      <option value="null">All manufacturers</option>
+      <option value="">All manufacturers</option>
       <option value="Mazda">Mazda</option>
       <option value="Mercedes">Mercedes</option>
       <option value="Honda">Honda</option>
@@ -33,11 +36,14 @@ export const ManufacturerOptions = (onSelectHandler) => {
   );
 };
 
-export const CategoryOptions = (onSelectHandler) => {
+export const CategoryOptions = (onSelectHandler, value = "") => {
   return (
-    <select defaultValue="null" onClick={(e) => onSelectHandler(e, "category")}>
-      <option value="null">All categories</option>
-      {useCategory.getList().map((category, key) => (
+    <select
+      value={value}
+      onChange={(e) => onSelectHandler("category", e.target.value)}
+    >
+      <option value="">All categories</option>
+      {categoryService.getList().map((category, key) => (
         <option key={key} value={category.id}>
           {category.name}
         </option>

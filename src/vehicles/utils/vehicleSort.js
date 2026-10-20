@@ -6,9 +6,10 @@ export function sortVehicles(vehicles, field, ascending = true) {
   return [...vehicles].sort((a, b) => {
     const left = a[field];
     const right = b[field];
-    const comparison = typeof left === "number"
-      ? left - right
-      : String(left).localeCompare(String(right));
+    const comparison =
+      typeof left === "number"
+        ? left - right
+        : String(left).localeCompare(String(right));
     return comparison * direction;
   });
 }

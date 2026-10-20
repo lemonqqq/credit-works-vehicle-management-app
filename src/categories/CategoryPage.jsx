@@ -2,51 +2,94 @@ import { default as CategoryDetail } from "./CategoryDetail";
 import { default as CategoryList } from "./CategoryList";
 import { useCallback, useEffect, useState } from "react";
 import "./CategoryPage.css";
-import { useCategory } from "./utils/useCategory";
+import { categoryService } from "./categoryService";
 import { FaPlus } from "react-icons/fa";
+import { categoryValidator } from "./utils/categoryValidator";
 
-function Index() {
+async function loadCategories(signal, setLoading, setError, setCategories) {
+  setLoading(true);
+  setError("");
+  try {
+    await categoryService.load(signal);
+    if (!signal.aborted) setCategories(categoryService.getDraft());
+  } catch (err) {
+    if (!signal.aborted) setError(err.message);
+  } finally {
+    if (!signal.aborted) setLoading(false);
+  }
+}
+
+function CategoryPage() {
   const [section, setSection] = useState("list");
   const [category, setCategory] = useState(null);
-  const [saving, setSaving] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const load = useCallback(async (signal) => {
-    setLoading(true);
-    setError("");
-    try {
-      await useCategory.load(signal);
-    } catch (err) {
-      if (!signal?.aborted) setError(err.message);
-    } finally {
-      if (!signal?.aborted) setLoading(false);
-    }
-  }, []);
+  const onCancel = async () => {
+    const abortController = new AbortController();
+    await loadCategories(
+      abortController.signal,
+      setLoading,
+      setError,
+      setCategories,
+    );
+  };
 
   useEffect(() => {
     const abortController = new AbortController();
-    load(abortController.signal);
+    loadCategories(abortController.signal, setLoading, setError, setCategories);
     return () => abortController.abort();
-  }, [load]);
+  }, []);
 
-  async function confirm(refreshCategories) {
-    setSaving(true);
+  const onConfirm = async (refreshCategories) => {
     setError("");
     try {
-      await useCategory.confirm(refreshCategories);
-      await load();
+      categoryValidator.validateWithList();
+      if (!categoryValidator.isModified()) {
+        setError("No changes made.");
+      } else if (!categoryValidator.isValid()) {
+        const invalidMessages = categoryService
+          .getDraft()
+          .filter((x) => x.invalid)
+          .map((x) => x.validationMessage);
+        setError(`Update not allowed. ${invalidMessages.join(",")}`);
+      } else {
+        await categoryService.confirm(refreshCategories);
+      }
     } catch (err) {
       setError(err.message);
-    } finally {
-      setSaving(false);
-      setCategory(null);
     }
-  }
+  };
 
-  const getDraftCategories = () => {
-    var list = useCategory.getDraft();
-    return list;
+  const onUpdate = (item) => {
+    const errors = categoryValidator.validate(item);
+    if (errors !== null) {
+      setError(errors);
+      return;
+    } else {
+      categoryService.update(item);
+      setCategories(categoryService.getDraft());
+      setSection("list");
+    }
+  };
+
+  const onFieldChangeHandler = (e, field) => {
+    const value = e.target.value;
+    const convertedValue =
+      !isNaN(parseFloat(value)) && isFinite(value)
+        ? parseFloat(e.target.value)
+        : e.target.value;
+    setCategory({ ...category, [field]: convertedValue });
+  };
+
+  const onIconClickHandler = (iconKey) => {
+    setCategory({ ...category, iconKey: iconKey });
+  };
+
+  const onRemoveItem = (item) => {
+    categoryService.remove(item);
+    setCategories(categoryService.getDraft());
   };
 
   const onEdit = useCallback((item) => {
@@ -80,20 +123,24 @@ function Index() {
       )}
       {section === "list" && !loading && (
         <CategoryList
-          data={getDraftCategories()}
+          categories={categories}
           onEdit={onEdit}
-          setError={setError}
+          onConfirm={onConfirm}
+          onCancel={onCancel}
+          onRemoveItem={onRemoveItem}
         />
       )}
       {section === "detail" && (
         <CategoryDetail
-          data={category}
-          returnToList={() => setSection("list")}
-          setError={setError}
+          category={category}
+          onUpdate={onUpdate}
+          onCancel={() => setSection("list")}
+          onFieldChangeHandler={onFieldChangeHandler}
+          onIconClickHandler={onIconClickHandler}
         />
       )}
     </section>
   );
 }
 
-export default Index;
+export default CategoryPage;

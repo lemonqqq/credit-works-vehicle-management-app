@@ -40,6 +40,8 @@ describe("vehicle data validation", () => {
   });
 
   it("accepts the smallest valid positive weight", () => {
-    expect(vehicleValidator.validate({ ...valid(), weightKg: 0.01 })).toBeNull();
+    expect(
+      vehicleValidator.validate({ ...valid(), weightKg: 0.01 }),
+    ).toBeNull();
   });
 });

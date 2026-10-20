@@ -13,9 +13,16 @@ describe("vehicle sorting", () => {
     ["manufacturer", ["Mia", "Alex", "Zoe"]],
     ["year", ["Alex", "Mia", "Zoe"]],
     ["weightKg", ["Alex", "Mia", "Zoe"]],
-  ])("sorts by %s in both directions without mutating the input", (field, owners) => {
-    expect(sortVehicles(vehicles, field).map((x) => x.ownerName)).toEqual(owners);
-    expect(sortVehicles(vehicles, field, false).map((x) => x.ownerName)).toEqual([...owners].reverse());
-    expect(vehicles.map((x) => x.ownerName)).toEqual(["Zoe", "Alex", "Mia"]);
-  });
+  ])(
+    "sorts by %s in both directions without mutating the input",
+    (field, owners) => {
+      expect(sortVehicles(vehicles, field).map((x) => x.ownerName)).toEqual(
+        owners,
+      );
+      expect(
+        sortVehicles(vehicles, field, false).map((x) => x.ownerName),
+      ).toEqual([...owners].reverse());
+      expect(vehicles.map((x) => x.ownerName)).toEqual(["Zoe", "Alex", "Mia"]);
+    },
+  );
 });

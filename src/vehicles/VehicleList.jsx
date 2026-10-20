@@ -16,22 +16,20 @@ import { useState } from "react";
 import { RiArrowLeftWideLine, RiArrowRightWideLine } from "react-icons/ri";
 import { sortVehicles } from "./utils/vehicleSort";
 
-function List({ vehicles, onEdit, onSearch }) {
-  const [filters, setFilters] = useState({});
+function VehicleList({
+  vehicles,
+  filters = {},
+  onEdit,
+  onSearchFilterUpdate,
+  onSearch,
+  onPageSearch,
+}) {
   const [sortField, setSortField] = useState("ownerName");
   const [ascending, setAscending] = useState(true);
-
-  const onFilterUpdate = (e, field) => {
-    setFilters({ ...filters, [field]: e.target.value });
-  };
 
   const getSortedList = () => {
     if (!vehicles?.data) return [];
     return sortVehicles(vehicles.data, sortField, ascending);
-  };
-
-  const onPageSearch = (pageNumber) => {
-    onSearch({ filters, pageNumber: pageNumber });
   };
 
   return (
@@ -42,25 +40,29 @@ function List({ vehicles, onEdit, onSearch }) {
           <input
             type="search"
             placeholder="Search owner"
-            onChange={(e) => onFilterUpdate(e, "ownerName")}
+            value={filters.ownerName ?? ""}
+            onChange={(e) => onSearchFilterUpdate("ownerName", e.target.value)}
           />
         </label>
         <label>
           <span className="vehicle-list-sr-only">Category</span>
-          {CategoryOptions(onFilterUpdate)}
+          {CategoryOptions(onSearchFilterUpdate, filters.category ?? "")}
         </label>
         <label>
           <span className="vehicle-list-sr-only">Manufacturer</span>
-          {ManufacturerOptions(onFilterUpdate)}
+          {ManufacturerOptions(
+            onSearchFilterUpdate,
+            filters.manufacturer ?? "",
+          )}
         </label>
         <label>
           <span className="vehicle-list-sr-only">Year</span>
-          {YearOptions(onFilterUpdate)}
+          {YearOptions(onSearchFilterUpdate, filters.year ?? "")}
         </label>
         <button
           className="vehicle-list-search"
           type="button"
-          onClick={() => onSearch(filters)}
+          onClick={onSearch}
         >
           Search
         </button>
@@ -187,7 +189,7 @@ function List({ vehicles, onEdit, onSearch }) {
                   <td>{item.weightKg.toFixed(2)} kg</td>
                   <td>
                     <div>
-                      <button type="button" onClick={() => onEdit(item)}>
+                      <button type="button" onClick={() => onEdit(item.id)}>
                         <FaPen />
                       </button>
                     </div>
@@ -198,27 +200,29 @@ function List({ vehicles, onEdit, onSearch }) {
           </table>
         </div>
       </div>
-      <footer className="vehicle-list-footer">
-        {vehicles.pageCount !== 1 && (
-          <button
-            type="button"
-            onClick={() => onPageSearch(vehicles.pageCount - 1)}
-          >
-            <RiArrowLeftWideLine />
-          </button>
-        )}
-        <span>{vehicles.pageCount}</span>
-        {Math.ceil(vehicles.totalRecords / 10) !== vehicles.pageCount && (
-          <button
-            type="button"
-            onClick={() => onPageSearch(vehicles.pageCount + 1)}
-          >
-            <RiArrowRightWideLine />
-          </button>
-        )}
-      </footer>
+      {vehicles.pageNumber && (
+        <footer className="vehicle-list-footer">
+          {vehicles.pageNumber !== 1 && (
+            <button
+              type="button"
+              onClick={() => onPageSearch(vehicles.pageNumber - 1)}
+            >
+              <RiArrowLeftWideLine />
+            </button>
+          )}
+          <span>{vehicles.pageNumber}</span>
+          {Math.ceil(vehicles.totalRecords / 10) !== vehicles.pageNumber && (
+            <button
+              type="button"
+              onClick={() => onPageSearch(vehicles.pageNumber + 1)}
+            >
+              <RiArrowRightWideLine />
+            </button>
+          )}
+        </footer>
+      )}
     </section>
   );
 }
 
-export default List;
+export default VehicleList;

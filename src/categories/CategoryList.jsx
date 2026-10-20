@@ -1,34 +1,12 @@
-import { useState } from "react";
 import { FaPen, FaTrash } from "react-icons/fa";
 import "./CategoryList.css";
 import { categoryIcon } from "./utils/categoryIcon";
-import { useCategory } from "./utils/useCategory";
-import { categoryValidator } from "./utils/categoryValidator";
 
-function List({ data, onEdit, setError }) {
-  const [categories, setCategories] = useState(data);
-
-  const onRemoveItem = (item) => {
-    setCategories(categories.filter((x) => x !== item));
-  };
-
-  const onConfirm = async (categories) => {
-    setError("");
-    try {
-      if (!categoryValidator.isModified()) {
-        setError("No changes made.");
-      } else if (!categoryValidator.isValid()) {
-        setError("Update not allowed.");
-      } else {
-        await useCategory.confirm(categories);
-      }
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const onCancel = () => {
-    setError("");
+function List({ categories, onEdit, onCancel, onConfirm, onRemoveItem }) {
+  const formatFieldWithDecimal = (value) => {
+    return !isNaN(parseFloat(value)) && isFinite(value)
+      ? parseFloat(value).toFixed(2)
+      : value;
   };
 
   return (
@@ -44,21 +22,26 @@ function List({ data, onEdit, setError }) {
               <tr>
                 <th scope="col">Category name</th>
                 <th scope="col">Description</th>
-                <th scope="col">Min. weight</th>
-                <th scope="col">Max weight</th>
+                <th scope="col">Minimum weight (in KG)</th>
+                <th scope="col">Maximum weight (in KG)</th>
                 <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody>
               {categories.map((item, index) => (
                 <tr key={`${item.id}-${index}`}>
-                  <td>{categoryIcon.getSection(item.id)}</td>
+                  <td>
+                    <div>
+                      <span>{categoryIcon.get(item.iconKey)}</span>
+                      {item.name}
+                    </div>
+                  </td>
                   <td>{item.description}</td>
-                  <td>{item.minWeightKg.toFixed(2)} kg</td>
+                  <td>{formatFieldWithDecimal(item?.minWeightKg)} kg</td>
                   <td>
                     {item.maxWeightKg === null
                       ? "No upper limit"
-                      : `${item.maxWeightKg.toFixed(2)} kg`}
+                      : `${formatFieldWithDecimal(item?.maxWeightKg)} kg`}
                   </td>
                   <td>
                     <div>

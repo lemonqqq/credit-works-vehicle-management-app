@@ -1,11 +1,11 @@
-import { useCategory } from "../../categories/utils/useCategory";
-import { vehiclesApi } from "../../services/api";
+import { categoryService } from "../categories/categoryService";
+import { vehiclesApi } from "../services/api";
 
 let vehicles = [];
 
 const search = async (filters, signal) => {
   const category =
-    filters.category == null ? null : useCategory.get(filters.category);
+    filters.category == null ? null : categoryService.get(filters.category);
   const list = await vehiclesApi.search(
     {
       ownerName: filters.ownerName,
@@ -45,7 +45,7 @@ const update = (vehicle) => {
 
 const get = (id, signal) => vehiclesApi.get(id, signal);
 
-export const useVehicle = {
+export const vehicleService = {
   search: (filters, signal) => search(filters, signal),
   get: (id, signal) => get(id, signal),
   getList: () => vehicles,
